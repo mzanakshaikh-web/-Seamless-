@@ -1,30 +1,52 @@
-# Seamless — Android reconstruction
+# Seamless — Android project source
 
-A fresh Kotlin/Jetpack Compose project using the original application ID (`com.shaikh.seamless`) and the approved Midnight Stream icon artwork.
+IMPORTANT: This is a source-project archive. **Do not upload this ZIP itself as the Android project.**
+Extract it first, then upload/commit the extracted files and folders into the ROOT of your GitHub repository.
 
-## What is included
-- Local audio library scanning through Android MediaStore (runtime permission required)
-- Playback through AndroidX Media3 / ExoPlayer
-- Explicit play/pause, previous, next, shuffle and repeat controls
-- Seek bar and track list
-- Dark interface and initial peach/pink/blue visual identity
-- Adaptive launcher icon resources generated from the approved 1254×1254 artwork
-- GitHub Actions Android build workflow
+After extraction, the repository root should look like this:
 
-## Important reconstruction note
-This is a clean reconstruction scaffold, **not a recovery of the original source repository**. The supplied APK contains compiled DEX/resources rather than the original Kotlin source, Gradle project, comments, or build history. The current implementation reproduces core local playback behavior, but does not claim feature parity with every screen or hidden behavior of the APK.
+    .github/
+      workflows/
+        android.yml
+    app/
+      build.gradle.kts
+      src/
+    build.gradle.kts
+    gradle.properties
+    settings.gradle.kts
+    README.md
 
-The following requested features are not yet implemented in this baseline: high-quality audio-reactive visualizer engine with 10+ renderers, on-device speech-to-text transcription and synchronized lyric editing, full Liquid Glass theming, metadata-based fallback album-art generation, and the optional home-screen widget. The visual ring currently provides the visual identity but is not an audio-frequency analyser. These are explicitly left out rather than represented by nonfunctional placeholders.
+Do not put these files inside an extra `Seamless-GitHub-Upload/` folder.
 
-## Build
-- Android Studio Ladybug or newer
+## GitHub upload instructions
+
+1. Extract this ZIP on your phone or computer.
+2. Open the extracted folder.
+3. In GitHub, open your repository and choose **Add file → Upload files**.
+4. Select the extracted project contents (the `app` folder, the Gradle files, README, and `.github` workflow folder), not the ZIP archive.
+5. Commit the files to the repository's main/root level.
+6. Open **Actions** and run **Seamless Android Build**.
+
+If your phone's file picker hides folders beginning with a dot, create `.github/workflows/android.yml` in GitHub manually and paste the workflow from the extracted file.
+
+## Download the APK
+
+After a successful Actions run, open that run and download the `Seamless-debug-APK` artifact. Extract `app-debug.apk` from the artifact ZIP. The source archive is not an installable APK.
+
+## Build setup
+
 - JDK 17
-- Android SDK Platform 35
+- Android SDK Platform 35 / Build Tools 35.0.0
+- Android Gradle Plugin 8.7.3
+- Gradle 8.9
+- Kotlin 2.0.21
 
-Open this folder in Android Studio and sync Gradle. Or run `gradle :app:assembleDebug` with Gradle 8.9+ installed. The GitHub Actions workflow installs Gradle and builds the debug APK on pushes and pull requests.
+The GitHub Actions workflow installs Gradle 8.9 directly. This source archive does not include `gradlew` or a Gradle wrapper JAR.
 
-## Permissions and privacy
-The app requests only audio-library read access to list local music. It does not upload audio. Playback uses Media3. No microphone permission is requested in this baseline.
+## Implementation and verification limits
 
-## Known verification status
-The project source and workflow are provided, but this environment did not run an Android Gradle build or device/emulator test. Treat the first CI build as the compile verification step; resolve any SDK/plugin download or toolchain issue reported there before release. A release APK must be signed with your own keystore.
+This is a reconstruction scaffold, not the original source project. The supplied APK contains compiled DEX/resources, not the original Kotlin source or original build setup. The current baseline includes local MediaStore audio listing, Media3 playback controls, track selection, seek bar, shuffle/repeat toggles, and the approved launcher artwork.
+
+Not implemented in this baseline: a genuine 10+ mode audio-reactive visualizer engine, on-device speech-to-text transcription and synchronized lyric editing, full Liquid Glass theming, metadata-generated fallback album art, background playback service/notification, and the optional home-screen widget. The visual ring is decorative, not an audio-frequency analyser.
+
+The archive has been integrity-tested. A complete Android Gradle compilation has not yet been independently verified.
