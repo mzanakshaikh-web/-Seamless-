@@ -3,18 +3,12 @@ name: Seamless Android Build
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-
-concurrency:
-  group: seamless-android-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build:
@@ -31,27 +25,48 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle 8.9
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK components
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Find Android project directory
+        id: project
+        shell: bash
+        run: |
+          if [ -f "settings.gradle.kts" ]; then
+            PROJECT_DIR="."
+          elif [ -f "Seamless-Android/settings.gradle.kts" ]; then
+            PROJECT_DIR="Seamless-Android"
+          else
+            echo "ERROR: Could not find settings.gradle.kts"
+            echo "Repository contents:"
+            ls -la
+            exit 1
+          fi
+
+          echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
+          echo "Found Seamless project in: $PROJECT_DIR"
+          ls -la "$PROJECT_DIR"
+
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Check Android SDK
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          test -d "$ANDROID_HOME/platforms/android-35" || {
-            echo "Android SDK Platform 35 is missing."
-            exit 1
-          }
-
       - name: Build debug APK
-        run: gradle --no-daemon --stacktrace :app:assembleDebug
+        run: |
+          gradle --no-daemon --stacktrace \
+            -p "${{ steps.project.outputs.project_dir }}" \
+            :app:assembleDebug
 
       - name: Upload Seamless APK
         uses: actions/upload-artifact@v4
         with:
           name: Seamless-Android-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ steps.project.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
