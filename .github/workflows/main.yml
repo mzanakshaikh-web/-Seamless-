@@ -29,29 +29,43 @@ jobs:
         uses: android-actions/setup-android@v4
         with:
           accept-android-sdk-licenses: true
-          log-accepted-android-sdk-licenses: false
-          packages: ''
 
-      - name: Install required Android SDK packages
+      - name: Install Android SDK packages
         run: |
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Find Android project directory
+      - name: Extract Android project
         id: project
         shell: bash
         run: |
+          set -e
+
           if [ -f "settings.gradle.kts" ]; then
-            PROJECT_DIR="."
+            PROJECT_DIR="$GITHUB_WORKSPACE"
           elif [ -f "Seamless-Android/settings.gradle.kts" ]; then
-            PROJECT_DIR="Seamless-Android"
+            PROJECT_DIR="$GITHUB_WORKSPACE/Seamless-Android"
+          elif [ -f "Seamless-Android-GitHub.zip" ]; then
+            mkdir -p extracted-project
+            unzip -q Seamless-Android-GitHub.zip -d extracted-project
+
+            SETTINGS_FILE=$(find extracted-project -name settings.gradle.kts -print -quit)
+
+            if [ -z "$SETTINGS_FILE" ]; then
+              echo "ERROR: settings.gradle.kts was not found inside the ZIP."
+              find extracted-project -maxdepth 4 -type f | head -100
+              exit 1
+            fi
+
+            PROJECT_DIR="$(dirname "$GITHUB_WORKSPACE/$SETTINGS_FILE")"
           else
-            echo "ERROR: Could not find settings.gradle.kts"
+            echo "ERROR: Android project ZIP not found."
             ls -la
             exit 1
           fi
 
           echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
-          echo "Found project in: $PROJECT_DIR"
+          echo "Android project found at: $PROJECT_DIR"
+          ls -la "$PROJECT_DIR"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
